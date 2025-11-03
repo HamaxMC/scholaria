@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 
+// app/auth/login/page.tsx
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -26,15 +27,24 @@ export default function LoginPage() {
 
   // Redirigir si el usuario ya está autenticado
   useEffect(() => {
-    // Solo redirigir si NO estamos en proceso de autenticación
-    if (!authLoading && user && !isAuthenticating) {
-      console.log(
-        "Usuario ya autenticado, redirigiendo a dashboard:",
-        user.role
-      );
-      router.replace(`/dashboard/${user.role}`);
+    if (!authLoading && user) {
+      const dashboardPath = `/dashboard/${user.role}`;
+      console.log("Usuario ya autenticado, redirigiendo a:", dashboardPath);
+
+      // Intentar múltiples métodos de redirección
+      const redirect = async () => {
+        try {
+          await router.replace(dashboardPath);
+          console.log("Redirección con router.replace completada");
+        } catch (error) {
+          console.error("Error en router.replace, usando router.push:", error);
+          router.push(dashboardPath);
+        }
+      };
+
+      redirect();
     }
-  }, [user, authLoading, router, isAuthenticating]);
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,10 +52,7 @@ export default function LoginPage() {
     setIsAuthenticating(true);
 
     try {
-      // Solo autenticar - el contexto manejará el documento
       await authService.signInWithEmail(email, password);
-
-      // NO redirigir aquí - dejar que el useEffect lo haga cuando el contexto se actualice
       console.log("Login exitoso, esperando actualización del contexto...");
     } catch (err: any) {
       console.error("Login error:", err);
@@ -76,10 +83,7 @@ export default function LoginPage() {
     setIsAuthenticating(true);
 
     try {
-      // Solo autenticar - el contexto manejará el resto
       await authService.signInWithGoogle();
-
-      // NO redirigir aquí - dejar que el useEffect lo haga
       console.log(
         "Google login exitoso, esperando actualización del contexto..."
       );
@@ -105,18 +109,22 @@ export default function LoginPage() {
     }
   };
 
-  // Mostrar loader si está cargando el contexto O si ya hay usuario O si está autenticando
-  if (authLoading || (user && !error) || (isAuthenticating && !error)) {
+  // Mostrar loader SOLO si está cargando el contexto inicial
+  // No mostrar loader si ya hay usuario (se está redirigiendo)
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">
-            {isAuthenticating ? "Autenticando..." : "Cargando..."}
-          </p>
+          <p className="text-muted-foreground">Verificando sesión...</p>
         </div>
       </div>
     );
+  }
+
+  // Si ya hay usuario, no mostrar el formulario (se está redirigiendo)
+  if (user) {
+    return null;
   }
 
   return (

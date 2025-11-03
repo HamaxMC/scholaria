@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// app/dashboard/layout.tsx
 export default function DashboardLayout({
   children,
 }: {
@@ -25,9 +26,17 @@ export default function DashboardLayout({
   const logout = useLogout();
 
   useEffect(() => {
+    console.log("Dashboard layout - Estado:", {
+      loading,
+      hasUser: !!user,
+      userRole: user?.role,
+    });
+
     // Solo redirigir si ya terminó de cargar y no hay usuario
     if (!loading && !user) {
-      console.log("Dashboard layout: Usuario no autenticado, redirigiendo a login");
+      console.log(
+        "Dashboard layout: Usuario no autenticado, redirigiendo a login"
+      );
       router.replace("/auth/login");
     } else if (!loading && user) {
       console.log("Dashboard layout: Usuario autenticado como", user.role);
@@ -36,11 +45,12 @@ export default function DashboardLayout({
 
   // Mostrar loader mientras carga
   if (loading) {
+    console.log("Dashboard layout: Mostrando loader");
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -48,9 +58,11 @@ export default function DashboardLayout({
 
   // No mostrar nada si no hay usuario (se está redirigiendo)
   if (!user) {
+    console.log("Dashboard layout: Sin usuario, retornando null");
     return null;
   }
 
+  console.log("Dashboard layout: Renderizando dashboard para", user.role);
   const navigation = user.role ? roleNavigation[user.role] : [];
 
   return (

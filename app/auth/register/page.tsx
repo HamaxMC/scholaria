@@ -136,17 +136,20 @@ export default function RegisterPage() {
   };
 
   // Mostrar loader si está cargando el contexto O si ya hay usuario O si está registrando
-  if (authLoading || (user && !error) || (isRegistering && !error)) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">
-            {isRegistering ? "Registrando..." : "Cargando..."}
-          </p>
+          <p className="text-muted-foreground">Verificando sesión...</p>
         </div>
       </div>
     );
+  }
+
+  // Si ya hay usuario, no mostrar el formulario
+  if (user) {
+    return null;
   }
 
   return (
