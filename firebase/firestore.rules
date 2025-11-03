@@ -1,0 +1,69 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 🔒 Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUserDoc(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isParticipant(chatData) {
+      return chatData.participants != null &&
+             request.auth.uid in chatData.participants;
+    }
+    
+    function isGroupMember(groupData) {
+      return groupData.members != null &&
+             request.auth.uid in groupData.members;
+    }
+
+    // 👤 User profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // ✅ Crear solo su propio documento si no existe
+      allow create: if isAuthenticated() &&
+                    isUserDoc(userId) &&
+                    !exists(/databases/$(database)/documents/users/$(userId));
+      
+      // ✅ Puede actualizar o borrar solo su propio perfil
+      allow update, delete: if isUserDoc(userId);
+    }
+
+    // 💬 Messages
+    match /messages/{messageId} {
+      allow read: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid ||
+        (
+          resource.data.groupId != null &&
+          exists(/databases/$(database)/documents/groups/$(resource.data.groupId))
+        )
+      );
+
+      allow create: if isAuthenticated() &&
+                    request.resource.data.senderId == request.auth.uid;
+
+      allow update: if isAuthenticated() &&
+                    (resource.data.senderId == request.auth.uid ||
+                     resource.data.receiverId == request.auth.uid);
+    }
+
+    // 💭 Chats
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() &&
+                         isParticipant(resource.data);
+    }
+
+    // 👥 Groups
+    match /groups/{groupId} {
+      allow read, write: if isAuthenticated() &&
+                         isGroupMember(resource.data);
+    }
+  }
+}
