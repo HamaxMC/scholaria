@@ -66,19 +66,19 @@ export default function DashboardLayout({
   const navigation = user.role ? roleNavigation[user.role] : [];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
+    <div className="min-h-screen p-4 md:p-6 lg:p-8">
+      {/* Header con efecto glass */}
+      <header className="glass-header sticky top-4 z-50 rounded-2xl mb-6">
+        <div className="container flex h-16 items-center px-6">
           <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">Sistema Académico</span>
+            <span className="font-bold text-lg">Sistema Académico</span>
           </Link>
           <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="transition-colors hover:text-foreground/80"
+                className="glass-subtle px-4 py-2 rounded-lg transition-colors hover:glass-effect"
               >
                 {item.label}
               </Link>
@@ -90,14 +90,14 @@ export default function DashboardLayout({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-8 w-8 rounded-full"
+                  className="glass-subtle relative h-10 w-10 rounded-full"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage
                       src={user.photoURL || undefined}
                       alt={user.displayName || "Usuario"}
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="glass-effect">
                       {user.displayName?.[0]?.toUpperCase() ||
                         user.email[0]?.toUpperCase() ||
                         "U"}
@@ -105,8 +105,11 @@ export default function DashboardLayout({
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <div className="flex items-center justify-start gap-2 p-2">
+              <DropdownMenuContent
+                align="end"
+                className="glass-effect border-0"
+              >
+                <div className="flex items-center justify-start gap-2 p-3">
                   <div className="flex flex-col space-y-1 leading-none">
                     {user.displayName && (
                       <p className="font-medium">{user.displayName}</p>
@@ -131,8 +134,8 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container py-6">{children}</main>
+      {/* Main Content - Con máximo ancho */}
+      <main className="container max-w-7xl mx-auto">{children}</main>
     </div>
   );
 }
